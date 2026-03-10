@@ -66,9 +66,8 @@ class Main extends Sprite
 		backend.Native.fixScaling();
 		#end
 
-		// Credits to MAJigsaw77 (he's the og author for this code)
 		#if android
-		Sys.setCwd(Path.addTrailingSlash(lime.system.System.applicationStorageDirectory));
+		Sys.setCwd(Path.addTrailingSlash(getExternalStorageDir()));
 		#elseif ios
 		Sys.setCwd(lime.system.System.applicationStorageDirectory);
 		#end
@@ -162,14 +161,12 @@ class Main extends Sprite
 		#end
 
 		#if mobile
-		// Em mobile não há teclado físico — autoPause causaria freeze ao minimizar
 		FlxG.autoPause = false;
 		#end
 
 		FlxG.fixedTimestep = false;
 		FlxG.game.focusLostFramerate = 60;
 
-		// TAB só existe em contextos com teclado físico
 		#if !mobile
 		FlxG.keys.preventDefaultKeys = [TAB];
 		#end
@@ -194,6 +191,55 @@ class Main extends Sprite
 		});
 	}
 
+	/**
+	 * Retorna o diretório de storage externo do Android via JNI.
+	 * Equivalente a Context.getExternalFilesDir(null).getAbsolutePath()
+	 * Resultado: /storage/emulated/0/Android/data/com.shadowmario.psychengine/files
+	 *
+	 * Fallback: internal storage via lime, caso o JNI falhe.
+	 */
+	#if android
+	public static function getExternalStorageDir():String
+	{
+		try
+		{
+			// Pega a instância da Activity principal do Lime
+			var getInstance = lime.system.JNI.createStaticMethod(
+				"org/haxe/lime/GameActivity",
+				"getInstance",
+				"()Lorg/haxe/lime/GameActivity;"
+			);
+			var activity = getInstance();
+
+			// Chama getExternalFilesDir(null) — retorna um java.io.File
+			var getExternalFilesDir = lime.system.JNI.createMemberMethod(
+				"android/app/Activity",
+				"getExternalFilesDir",
+				"(Ljava/lang/String;)Ljava/io/File;"
+			);
+			var file = getExternalFilesDir(activity, null);
+
+			// Converte File em String com getAbsolutePath()
+			var getAbsolutePath = lime.system.JNI.createMemberMethod(
+				"java/io/File",
+				"getAbsolutePath",
+				"()Ljava/lang/String;"
+			);
+			var path:String = getAbsolutePath(file);
+
+			if (path != null && path.length > 0)
+				return path;
+		}
+		catch (e:Dynamic)
+		{
+			trace('[WARN] getExternalStorageDir JNI failed: $e — falling back to internal storage');
+		}
+
+		// Fallback: internal storage
+		return lime.system.System.applicationStorageDirectory;
+	}
+	#end
+
 	static function resetSpriteCache(sprite:Sprite):Void {
 		@:privateAccess {
 			sprite.__cacheBitmap = null;
@@ -212,8 +258,9 @@ class Main extends Sprite
 		dateNow = dateNow.replace(" ", "_");
 		dateNow = dateNow.replace(":", "'");
 
-		// Em mobile não há acesso a "./crash/" — salva no storage da app
-		#if mobile
+		#if android
+		var crashDir:String = Path.addTrailingSlash(getExternalStorageDir()) + "crash/";
+		#elseif mobile
 		var crashDir:String = lime.system.System.applicationStorageDirectory + "crash/";
 		#else
 		var crashDir:String = "./crash/";
