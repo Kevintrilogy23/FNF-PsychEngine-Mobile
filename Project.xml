@@ -20,11 +20,11 @@
 
 	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
-	<define name="MODS_ALLOWED" if="desktop" />
+	<define name="MODS_ALLOWED" if="desktop || android" /> <!-- Android lê mods do external storage -->
 	<define name="HSCRIPT_ALLOWED" if="desktop" />
 	<define name="LUA_ALLOWED" if="desktop" />
 	<define name="ACHIEVEMENTS_ALLOWED" />
-	<define name="DISCORD_ALLOWED" if="desktop" /> <!-- Discord não suportado em mobile -->
+	<define name="DISCORD_ALLOWED" if="desktop" />
 	<define name="TRANSLATIONS_ALLOWED" />
 	<define name="IRIS_DEBUG"/>
 
@@ -33,8 +33,8 @@
 	<define name="PSYCH_WATERMARKS"/>
 
 	<!-- ========================= MOBILE SUPPORT ========================= -->
-	<define name="MOBILE_DATA" if="mobile" />     <!-- Usa paths corretos de storage Android/iOS -->
-	<define name="TOUCH_CONTROLS" if="mobile" />  <!-- Ativa detecção de toques no lugar de teclado -->
+	<define name="MOBILE_DATA" if="mobile" />
+	<define name="TOUCH_CONTROLS" if="mobile" />
 	<!-- ==================================================================== -->
 
 	<section if="officialBuild">
@@ -45,19 +45,10 @@
 
 	<!-- ____________________________ Window Settings ___________________________ -->
 
-	<!--These window settings apply to all targets-->
 	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" allow-high-dpi="true" />
-
-	<!--HTML5-specific-->
 	<window if="html5" resizable="true" />
-
-	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false"/>
-
-	<!--Mobile-specific — fullscreen, landscape forçado, high-dpi ativo-->
 	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" resizable="false" allow-shaders="true" require-shaders="true" allow-high-dpi="true" />
-
-	<!--Switch-specific-->
 	<window if="switch" orientation="landscape" fullscreen="true" width="0" height="0" resizable="true" />
 
 	<!-- _____________________________ Path Settings ____________________________ -->
@@ -70,10 +61,8 @@
 
 	<!-- __________________________ Game Assets & Etc. __________________________ -->
 
-	<!-- Turn on Crash Handler -->
 	<define name="CRASH_HANDLER" if="desktop release" />
 
-	<!-- Assets -->
 	<assets path="assets/fonts" />
 	<assets path="assets/shared"        exclude="*.ogg" if="web"/>
 	<assets path="assets/shared"        exclude="*.mp3" unless="web"/>
@@ -103,11 +92,15 @@
 
 	<define name="CHECK_FOR_UPDATES" if="desktop officialBuild"/>
 
-	<section if="MODS_ALLOWED">
+	<!-- Mods no desktop: embeds junto com o executável -->
+	<section if="MODS_ALLOWED desktop">
 		<assets path='example_mods' rename='mods' embed='false' type='template' unless="mac"/>
 		<assets path='example_mods' rename='mods' embed='false' if="mac"/>
 		<assets path='list.txt' rename='modsList.txt' />
 	</section>
+	<!-- Mods no Android: NÃO embuta — ficam no external storage em runtime -->
+	<!-- O Paths.hx com storagePath já resolve o caminho correto em android -->
+
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
 
 	<!-- OpenAL config -->
@@ -122,21 +115,17 @@
 	<haxelib name="flixel-addons" version="3.2.2"/>
 	<haxelib name="tjson" version="1.4.0"/>
 
-	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
 	<haxelib name="hscript-iris" if="HSCRIPT_ALLOWED" version="1.1.3"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED" version="2.0.1"/>
 	<haxelib name="hxdiscord_rpc" version="1.2.4" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
 
-	<!-- Android tools — necessário para compilar para Android -->
 	<haxelib name="extension-androidtools" if="android" />
 
-	<!-- Disable Discord IO Thread -->
 	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
 	<haxedef name="NO_PRECOMPILED_HEADERS" if="linux" />
 
-	<!-- Enables a terminal log prompt on debug builds -->
 	<haxelib name="hxcpp-debug-server" if="debug"/>
 	<haxedef name="HXC_LIBVLC_LOGGING" if="VIDEOS_ALLOWED debug" />
 	<haxedef name="HXVLC_NO_SHARE_DIRECTORY" if="VIDEOS_ALLOWED" />
@@ -144,51 +133,26 @@
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
-	<!--Enable the Flixel core recording system-->
-	<!--<haxedef name="FLX_RECORD" />-->
-
-	<!--Disable the right and middle mouse buttons-->
+	<!-- <haxedef name="FLX_RECORD" /> -->
 	<!-- <haxedef name="FLX_NO_MOUSE_ADVANCED" /> -->
-
-	<!--Disable the native cursor API on Flash-->
-	<!--<haxedef name="FLX_NO_NATIVE_CURSOR" />-->
-
-	<!-- Toque ativo em mobile — NÃO desabilitar FLX_NO_TOUCH -->
-	<!-- FLX_NO_MOUSE e FLX_NO_KEYBOARD foram removidos: o código-fonte usa
-	     FlxG.keys/mouse sem guards #if, desabilitá-los quebra a compilação -->
+	<!-- <haxedef name="FLX_NO_NATIVE_CURSOR" /> -->
 	<!-- <haxedef name="FLX_NO_TOUCH" if="desktop" /> -->
-	<!--<haxedef name="FLX_NO_GAMEPAD" />-->
+	<!-- <haxedef name="FLX_NO_GAMEPAD" /> -->
+	<!-- <haxedef name="FLX_NO_SOUND_TRAY" /> -->
+	<!-- <haxedef name="FLX_NO_SOUND_SYSTEM" /> -->
 
-	<!--Disable the Flixel core sound tray-->
-	<!--<haxedef name="FLX_NO_SOUND_TRAY" />-->
-
-	<!--Disable the Flixel sound management code-->
-	<!--<haxedef name="FLX_NO_SOUND_SYSTEM" />-->
-
-	<!--Disable the Flixel core focus lost screen-->
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
-
-	<!-- Show debug traces for hxCodec -->
 	<haxedef name="HXC_DEBUG_TRACE" if="debug" />
-
-	<!--Disable the Flixel core debugger. Automatically gets set whenever you compile in release mode!-->
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
-
-	<!--Enable this for Nape release builds for a serious peformance improvement-->
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
 
-	<!--Used for Izzy Engine's crash handler-->
 	<haxedef name="HXCPP_CHECK_POINTER" if="CRASH_HANDLER" />
 	<haxedef name="HXCPP_STACK_LINE" if="CRASH_HANDLER" />
 	<haxedef name="HXCPP_STACK_TRACE" if="CRASH_HANDLER" />
 
-	<!--Disable deprecated warnings-->
 	<haxedef name='no-deprecation-warnings' />
-
-	<!-- Haxe 4.3.0+: Enable pretty syntax errors and stuff. -->
 	<haxedef name="message.reporting" value="pretty" />
 
-	<!--Macro fixes-->
 	<haxeflag name="--macro" value="allowPackage('flash')" />
 	<haxeflag name="--macro" value="include('my.pack')" />
 
