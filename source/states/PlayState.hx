@@ -5,7 +5,9 @@ import backend.StageData;
 import backend.WeekData;
 import backend.Song;
 import backend.Rating;
-
+import flixel.FlxG;
+import flixel.input.touch.FlxTouch;
+import flixel.FlxSprite;
 import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxSubState;
@@ -73,6 +75,11 @@ import crowplexus.hscript.Printer;
 **/
 class PlayState extends MusicBeatState
 {
+
+	#if mobile
+    var hitbox:FlxSprite;
+    #end
+	
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
@@ -1863,7 +1870,38 @@ class PlayState extends MusicBeatState
 				clearNotesBefore(Conductor.songPosition);
 			}
 		}
-		#end
+		#if mobile
+
+        controls.NOTE_LEFT = false;
+        controls.NOTE_DOWN = false;
+        controls.NOTE_UP = false;
+        controls.NOTE_RIGHT = false;
+
+     for (touch in FlxG.touches.list)
+    {
+     if (touch.pressed)
+    {
+        var lane:Int = Std.int(touch.x / (FlxG.width / 4));
+        if (lane > 3) lane = 3;
+
+        switch(lane)
+        {
+            case 0:
+                controls.NOTE_LEFT = true;
+
+            case 1:
+                controls.NOTE_DOWN = true;
+
+            case 2:
+                controls.NOTE_UP = true;
+
+            case 3:
+                controls.NOTE_RIGHT = true;
+        }
+    }
+}
+
+#end
 
 		setOnScripts('botPlay', cpuControlled);
 		callOnScripts('onUpdatePost', [elapsed]);
