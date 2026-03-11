@@ -1888,16 +1888,16 @@ class PlayState extends MusicBeatState
         switch(lane)
         {
           case 0:
-              controls.NOTE_LEFT = true;
+              controls.keyPressed("left");
 
           case 1:
-              controls.NOTE_DOWN = true;
+              controls.keyPressed("down");
 
           case 2:
-              controls.NOTE_UP = true;
+              controls.keyPressed("up");
 
           case 3:
-              controls.NOTE_RIGHT = true;
+              controls.keyPressed("right");
         }
      }
   }
