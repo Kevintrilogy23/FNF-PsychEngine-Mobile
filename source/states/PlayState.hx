@@ -1870,16 +1870,18 @@ class PlayState extends MusicBeatState
 				clearNotesBefore(Conductor.songPosition);
 			}
 		}
+		#end
+			
 		#if mobile
 
-        controls.NOTE_LEFT = false;
-        controls.NOTE_DOWN = false;
-        controls.NOTE_UP = false;
-        controls.NOTE_RIGHT = false;
+controls.NOTE_LEFT = false;
+controls.NOTE_DOWN = false;
+controls.NOTE_UP = false;
+controls.NOTE_RIGHT = false;
 
-     for (touch in FlxG.touches.list)
-    {
-     if (touch.pressed)
+for (touch in FlxG.touches.list)
+{
+    if (touch.pressed)
     {
         var lane:Int = Std.int(touch.x / (FlxG.width / 4));
         if (lane > 3) lane = 3;
