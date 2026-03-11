@@ -1873,10 +1873,10 @@ class PlayState extends MusicBeatState
 		#end
 			
 		#if mobile
-        controls.NOTE_LEFT = false;
-        controls.NOTE_DOWN = false;
-        controls.NOTE_UP = false;
-        controls.NOTE_RIGHT = false;
+        controls.instance.unpressAction('left');
+        controls.instance.unpressAction('down');
+        controls.instance.unpressAction('up');
+        controls.instance.unpressAction('right');
 
         for (touch in FlxG.touches.list)
         {
@@ -1888,16 +1888,13 @@ class PlayState extends MusicBeatState
         switch(lane)
         {
           case 0:
-              controls.keyPressed("left");
-
+              controls.instance.pressAction('left');
           case 1:
-              controls.keyPressed("down");
-
+              controls.instance.pressAction('down');
           case 2:
-              controls.keyPressed("up");
-
+              controls.instance.pressAction('up');
           case 3:
-              controls.keyPressed("right");
+              controls.instance.pressAction('right');
         }
      }
   }
